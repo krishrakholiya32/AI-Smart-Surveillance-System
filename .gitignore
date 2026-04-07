@@ -1,0 +1,6 @@
+*.pt
+*.mp4
+__pycache__/
+venv/
+alerts/
+event_log.txt
