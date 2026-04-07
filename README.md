@@ -12,7 +12,7 @@
 
 ### 🎬 Full Demo Video
 
-*(Upload your video on GitHub and replace this line with the generated link)*
+https://github.com/krishrakholiya32/AI-Smart-Surveillance-System/blob/main/assets/demo.mp4
 
 ---
 
