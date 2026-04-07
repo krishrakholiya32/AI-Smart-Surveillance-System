@@ -1,6 +1,6 @@
 # 🎯 AI Smart Surveillance System
 
-![Demo](images/zone_setuo.png)
+![Demo](images/zone_setup.png)
 
 > Real-time AI-based threat detection using computer vision — person tracking, weapon detection, restricted zone monitoring, and pose estimation in a single dashboard.
 
