@@ -1,0 +1,15 @@
+# Core
+streamlit>=1.32.0
+opencv-python-headless>=4.9.0
+numpy>=1.26.0
+pygame>=2.5.2
+
+# AI / Detection
+ultralytics>=8.3.0   # YOLOv11 (yolo11s, yolo11n-pose, weapon.pt)
+torch>=2.2.0
+torchvision>=0.17.0
+
+# Training notebook only (not needed to run app.py)
+roboflow>=1.1.0
+pyyaml>=6.0.1
+pandas>=2.2.0
