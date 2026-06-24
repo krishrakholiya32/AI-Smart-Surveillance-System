@@ -1,0 +1,9 @@
+# Place your model files here:
+#   yolo11s.pt
+#   yolo11n-pose.pt
+#   weapon.pt
+#
+# After running scripts/export_onnx.py, also place:
+#   yolo11s.onnx
+#   yolo11n-pose.onnx
+#   weapon.onnx

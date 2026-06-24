@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# Models (large binary files — transfer separately)
+*.pt
+*.onnx
+*.engine
+
+# Environment
+.env
+*.env.local
+
+# Storage / outputs
+alerts/
+storage/
+event_log.txt
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Docker
+nginx/certs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/

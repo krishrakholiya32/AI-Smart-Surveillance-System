@@ -1,0 +1,29 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+websockets==13.1
+python-multipart==0.0.12
+pydantic==2.10.3
+pydantic-settings==2.7.0
+
+# Database
+sqlalchemy==2.0.36
+asyncpg==0.30.0
+
+# Auth
+python-jose[cryptography]==3.3.0
+bcrypt==4.2.1
+
+# AI/ML
+ultralytics==8.3.52
+opencv-python-headless==4.10.0.84
+numpy==1.26.4
+torch==2.5.1+cpu
+torchvision==0.20.1+cpu
+onnxruntime==1.20.1
+onnx==1.17.0
+onnxslim==0.1.48
+
+# Utilities
+aiofiles==24.1.0
+Pillow==11.1.0
+python-dotenv==1.0.1

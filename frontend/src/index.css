@@ -1,0 +1,15 @@
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: #0a0c10;
+  color: #c8d6e5;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0d1117; }
+::-webkit-scrollbar-thumb { background: #1e3a4a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #00e5ff44; }
