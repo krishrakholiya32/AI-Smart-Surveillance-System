@@ -12,7 +12,7 @@ from app.models.user import User
 from app.core.database import AsyncSessionLocal
 from sqlalchemy import select
 
-from app.api import auth, cameras, zones, alerts, events, stream
+from app.api import auth, cameras, zones, alerts, events, stream, settings as settings_api
 from app.models.camera import Camera
 from app.models.zone import Zone
 from app.services import camera_manager
@@ -100,6 +100,7 @@ app.include_router(zones.router)
 app.include_router(alerts.router)
 app.include_router(events.router)
 app.include_router(stream.router)
+app.include_router(settings_api.router)
 
 
 @app.get("/health")

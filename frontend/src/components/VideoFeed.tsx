@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react'
 import { useVideoStream } from '../hooks/useVideoStream'
 import { useStore } from '../store'
+import { camerasApi } from '../api/client'
+import { Play, Square } from 'lucide-react'
 
 interface Props {
   cameraId: number
@@ -10,6 +13,28 @@ interface Props {
 export default function VideoFeed({ cameraId, cameraName, compact }: Props) {
   const { frame, connected } = useVideoStream(cameraId)
   const metrics = useStore(s => s.metrics[cameraId])
+
+  const [running, setRunning] = useState(false)
+  const [toggling, setToggling] = useState(false)
+
+  useEffect(() => {
+    camerasApi.status(cameraId).then(s => setRunning(s.running)).catch(console.error)
+  }, [cameraId])
+
+  const toggle = async () => {
+    setToggling(true)
+    try {
+      if (running) {
+        await camerasApi.stop(cameraId)
+        setRunning(false)
+      } else {
+        await camerasApi.start(cameraId)
+        setRunning(true)
+      }
+    } finally {
+      setToggling(false)
+    }
+  }
 
   return (
     <div className="relative bg-cyber-surface rounded border border-cyber-border overflow-hidden">
@@ -28,6 +53,21 @@ export default function VideoFeed({ cameraId, cameraName, compact }: Props) {
           </span>
         )}
       </div>
+
+      {/* On/off toggle */}
+      <button
+        onClick={toggle}
+        disabled={toggling}
+        title={running ? 'Stop' : 'Start'}
+        className={`absolute top-2 right-2 z-10 flex items-center gap-1 font-mono text-xs px-2 py-0.5 rounded border transition-colors disabled:opacity-50 ${
+          running
+            ? 'border-cyber-red/40 text-cyber-red hover:bg-cyber-red/10'
+            : 'border-cyber-green/40 text-cyber-green hover:bg-cyber-green/10'
+        }`}
+      >
+        {running ? <Square size={11} /> : <Play size={11} />}
+        {toggling ? '…' : running ? 'STOP' : 'START'}
+      </button>
 
       {/* Video */}
       {frame ? (

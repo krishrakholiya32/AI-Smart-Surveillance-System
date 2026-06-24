@@ -15,31 +15,13 @@ export default function CameraView() {
   const [camera, setCamera]   = useState<Camera | null>(null)
   const [zones, setZones]     = useState<Zone[]>([])
   const [tab, setTab]         = useState<Tab>('live')
-  const [running, setRunning] = useState(false)
-  const [loading, setLoading] = useState(false)
 
   const metrics = useStore(s => s.metrics[cameraId])
 
   useEffect(() => {
     camerasApi.get(cameraId).then(setCamera).catch(console.error)
     zonesApi.list(cameraId).then(setZones).catch(console.error)
-    camerasApi.status(cameraId).then(s => setRunning(s.running)).catch(console.error)
   }, [cameraId])
-
-  const toggleStream = async () => {
-    setLoading(true)
-    try {
-      if (running) {
-        await camerasApi.stop(cameraId)
-        setRunning(false)
-      } else {
-        await camerasApi.start(cameraId)
-        setRunning(true)
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const saveZone = async (points: number[][], name: string, color: string) => {
     const z = await zonesApi.create({ camera_id: cameraId, name, points, color })
@@ -60,24 +42,11 @@ export default function CameraView() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="font-mono text-cyber-cyan tracking-widest">
-            {camera?.name ?? `CAMERA ${cameraId}`}
-          </h2>
-          <p className="text-cyber-muted text-xs font-mono mt-0.5">{camera?.source}</p>
-        </div>
-        <button
-          onClick={toggleStream}
-          disabled={loading}
-          className={`font-mono text-sm px-6 py-2 rounded border transition-colors ${
-            running
-              ? 'border-cyber-red text-cyber-red hover:bg-cyber-red/10'
-              : 'border-cyber-green text-cyber-green hover:bg-cyber-green/10'
-          } disabled:opacity-50`}
-        >
-          {loading ? '…' : running ? '■ STOP' : '▶ START'}
-        </button>
+      <div>
+        <h2 className="font-mono text-cyber-cyan tracking-widest">
+          {camera?.name ?? `CAMERA ${cameraId}`}
+        </h2>
+        <p className="text-cyber-muted text-xs font-mono mt-0.5">{camera?.source}</p>
       </div>
 
       {/* Tab nav */}
@@ -98,11 +67,6 @@ export default function CameraView() {
       {tab === 'live' && (
         <div className="space-y-4">
           <VideoFeed cameraId={cameraId} cameraName={camera?.name} />
-          {!running && (
-            <p className="text-center text-cyber-muted text-sm font-mono">
-              Press ▶ START to begin detection
-            </p>
-          )}
         </div>
       )}
 

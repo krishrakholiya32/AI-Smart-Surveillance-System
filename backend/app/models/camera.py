@@ -10,7 +10,7 @@ class Camera(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(128))
     source: Mapped[str] = mapped_column(String(512))  # "0", "1", or RTSP/HTTP URL
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=False)
     width: Mapped[int] = mapped_column(Integer, default=640)
     height: Mapped[int] = mapped_column(Integer, default=480)
 

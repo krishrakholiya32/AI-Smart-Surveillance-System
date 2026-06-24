@@ -153,8 +153,12 @@ class DetectionPipeline:
         self.settings = settings
 
         self.tracker = CentroidTracker(max_disappeared=90, reid_ttl=60.0,
-                                       reid_dist=300.0, match_dist=150.0, iou_assist=0.30)
-        self.person_smoother = TemporalSmoother(window_size=3, min_hits=2, iou_match=0.40)
+                                       reid_dist=350.0, match_dist=150.0, iou_assist=0.30)
+        # iou_match loosened from 0.40 — at 320x240 inference, the same person's
+        # box can drift several px between frames just from model noise, which
+        # was enough to drop below 0.40 and flicker the confirmed detection off
+        # for a cycle (and with it, the tracker's continuity for that ID).
+        self.person_smoother = TemporalSmoother(window_size=3, min_hits=2, iou_match=0.35)
         self.weapon_smoother = TemporalSmoother(window_size=4, min_hits=3, iou_match=0.35)
 
         self.frame_count = 0

@@ -110,6 +110,28 @@ class CentroidTracker:
                     self._update_object(oid, centroids[c], boxes[c])
                     used_rows.add(r); used_cols.add(c)
 
+            # Last-resort pass: a track that's still alive (not yet past
+            # max_disappeared) but didn't match in either pass above would
+            # otherwise sit untouched while its detection mints a brand-new
+            # ID this same frame — producing a duplicate box for one person
+            # until the old ID's disappeared-count finally expires. Prefer
+            # reusing the nearest still-alive unmatched track over minting
+            # a new ID, as long as nothing else is competing for it.
+            final_rows = [r for r in range(len(ids)) if r not in used_rows]
+            final_cols = [c for c in range(len(centroids)) if c not in used_cols]
+            if final_rows and final_cols:
+                last_resort = sorted(
+                    ((D[r, c], r, c) for r in final_rows for c in final_cols),
+                    key=lambda t: t[0],
+                )
+                for d, r, c in last_resort:
+                    if r in used_rows or c in used_cols:
+                        continue
+                    if d <= self.match_dist * 3.5:
+                        oid = ids[r]
+                        self._update_object(oid, centroids[c], boxes[c])
+                        used_rows.add(r); used_cols.add(c)
+
             for r in set(range(len(ids))) - used_rows:
                 self.disappeared[ids[r]] += 1
                 if self.disappeared[ids[r]] > self.max_disappeared:

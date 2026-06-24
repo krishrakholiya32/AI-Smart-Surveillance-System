@@ -9,7 +9,7 @@ export default function Cameras() {
   const setCameras = useStore(s => s.setCameras)
   const [running, setRunning] = useState<Record<number, boolean>>({})
   const [adding, setAdding]   = useState(false)
-  const [form, setForm]       = useState({ name: '', source: 'http://192.168.65.254:8765/video' })
+  const [form, setForm]       = useState({ name: '', source: 'http://host.docker.internal:8765/video' })
 
   const load = async () => {
     const list = await camerasApi.list()
@@ -24,7 +24,7 @@ export default function Cameras() {
     e.preventDefault()
     await camerasApi.create(form)
     setAdding(false)
-    setForm({ name: '', source: 'http://192.168.65.254:8765/video' })
+    setForm({ name: '', source: 'http://host.docker.internal:8765/video' })
     load()
   }
 
@@ -68,13 +68,18 @@ export default function Cameras() {
             <div>
               <label className="block text-xs font-mono text-cyber-muted mb-1">SOURCE</label>
               <input value={form.source} onChange={e => setForm(f => ({ ...f, source: e.target.value }))}
-                placeholder="http://192.168.65.254:8765/video | rtsp://..."
+                placeholder="http://host.docker.internal:8765/video | http://<phone-ip>:4747/video | rtsp://..."
                 className="w-full bg-cyber-bg border border-cyber-border rounded px-3 py-2 text-sm font-mono text-cyber-dim focus:outline-none focus:border-cyber-cyan" />
             </div>
           </div>
-          <p className="text-cyber-muted text-xs font-mono">
-            Webcam: http://192.168.65.254:8765/video — RTSP cameras: rtsp://user:pass@IP/stream
-          </p>
+          <div className="text-cyber-muted text-xs font-mono space-y-1">
+            <p>Host webcam: run <code className="text-cyber-cyan">python scripts/webcam_server.py</code> on
+              this machine, then use <code className="text-cyber-cyan">http://host.docker.internal:8765/video</code></p>
+            <p>Phone camera: install the <span className="text-cyber-dim">DroidCam</span> app, connect phone +
+              PC to the same Wi-Fi, then use <code className="text-cyber-cyan">http://&lt;phone-ip&gt;:4747/video</code></p>
+            <p>RTSP/IP cameras: <code className="text-cyber-cyan">rtsp://user:pass@IP/stream</code></p>
+            <p>Add as many cameras as you like — each runs its own independent detection worker.</p>
+          </div>
           <div className="flex gap-2">
             <button type="submit"
               className="border border-cyber-green text-cyber-green text-xs font-mono px-4 py-1.5 rounded hover:bg-cyber-green/10">

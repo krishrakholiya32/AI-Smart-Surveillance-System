@@ -92,12 +92,19 @@ async def start_camera(camera_id: int, db: AsyncSession = Depends(get_db), _=Dep
             )
 
     camera_manager.start_camera(camera_id, cam.source, zones, loop, alert_cb)
+    cam.is_active = True
+    await db.commit()
     return {"status": "started", "camera_id": camera_id}
 
 
 @router.post("/{camera_id}/stop", status_code=200)
-async def stop_camera(camera_id: int, _=Depends(get_current_user)):
+async def stop_camera(camera_id: int, db: AsyncSession = Depends(get_db), _=Depends(get_current_user)):
     camera_manager.stop_camera(camera_id)
+    result = await db.execute(select(Camera).where(Camera.id == camera_id))
+    cam = result.scalar_one_or_none()
+    if cam:
+        cam.is_active = False
+        await db.commit()
     return {"status": "stopped", "camera_id": camera_id}
 
 

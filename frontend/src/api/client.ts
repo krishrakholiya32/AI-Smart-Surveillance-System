@@ -65,3 +65,18 @@ export const eventsApi = {
   list: (params?: {camera_id?:number; level?:string; limit?:number}) =>
     api.get<EventRecord[]>('/events', { params }).then(r => r.data),
 }
+
+export interface SettingsInfo {
+  thresholds: {
+    CONF_PERSON: number
+    CONF_WEAPON: number
+    RUN_THRESH_NORM: number
+    LOITER_SECS: number
+    CROWD_LIMIT: number
+  }
+  onnx_active: Record<string, boolean>
+}
+
+export const settingsApi = {
+  get: () => api.get<SettingsInfo>('/settings').then(r => r.data),
+}
