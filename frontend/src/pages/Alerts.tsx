@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { alertsApi, type AlertRecord } from '../api/client'
-import AlertBadge from '../components/AlertBadge'
+import AlertBadge, { StatusBadge } from '../components/AlertBadge'
 import { formatDistanceToNow } from 'date-fns'
 
 export default function Alerts() {
@@ -23,6 +23,11 @@ export default function Alerts() {
   const del = async (id: number) => {
     await alertsApi.delete(id)
     setAlerts(prev => prev.filter(a => a.id !== id))
+  }
+
+  const setStatus = async (id: number, status: 'confirmed' | 'dismissed') => {
+    const updated = await alertsApi.setStatus(id, status)
+    setAlerts(prev => prev.map(a => a.id === id ? updated : a))
   }
 
   const TYPES = ['', 'weapon', 'zone_intrusion', 'running', 'loitering', 'fall', 'crowd']
@@ -62,6 +67,7 @@ export default function Alerts() {
               <div className="flex-1 min-w-0 space-y-1.5">
                 <div className="flex items-center gap-2 flex-wrap">
                   <AlertBadge type={a.alert_type} />
+                  <StatusBadge status={a.status} />
                   <span className="text-cyber-muted text-xs font-mono">CAM {a.camera_id}</span>
                   {a.person_id !== null && (
                     <span className="text-cyber-muted text-xs font-mono">Person #{a.person_id}</span>
@@ -78,6 +84,18 @@ export default function Alerts() {
                     className="text-xs font-mono text-cyber-cyan hover:underline">
                     SNAPSHOT
                   </a>
+                )}
+                {a.status === 'pending' && (
+                  <>
+                    <button onClick={() => setStatus(a.id, 'confirmed')}
+                      className="text-xs font-mono text-cyber-green hover:underline">
+                      CONFIRM
+                    </button>
+                    <button onClick={() => setStatus(a.id, 'dismissed')}
+                      className="text-xs font-mono text-cyber-muted hover:text-cyber-orange transition-colors">
+                      DISMISS
+                    </button>
+                  </>
                 )}
                 <button onClick={() => del(a.id)}
                   className="text-xs font-mono text-cyber-muted hover:text-cyber-red transition-colors">

@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.deps import get_current_user
 from app.core.database import get_db
 from app.models.alert import Alert
-from app.schemas.alert import AlertOut
+from app.schemas.alert import AlertOut, AlertStatusUpdate
 
 router = APIRouter(prefix="/api/alerts", tags=["alerts"])
 
@@ -48,6 +48,25 @@ async def get_snapshot(alert_id: int, db: AsyncSession = Depends(get_db), _=Depe
     if not alert or not alert.snapshot_path or not os.path.exists(alert.snapshot_path):
         raise HTTPException(404, "Snapshot not found")
     return FileResponse(alert.snapshot_path, media_type="image/jpeg")
+
+
+@router.patch("/{alert_id}", response_model=AlertOut)
+async def update_alert_status(
+    alert_id: int,
+    payload: AlertStatusUpdate,
+    db: AsyncSession = Depends(get_db),
+    _=Depends(get_current_user),
+):
+    if payload.status not in ("confirmed", "dismissed"):
+        raise HTTPException(400, "status must be 'confirmed' or 'dismissed'")
+    result = await db.execute(select(Alert).where(Alert.id == alert_id))
+    alert = result.scalar_one_or_none()
+    if not alert:
+        raise HTTPException(404, "Alert not found")
+    alert.status = payload.status
+    await db.commit()
+    await db.refresh(alert)
+    return alert
 
 
 @router.delete("/{alert_id}", status_code=204)

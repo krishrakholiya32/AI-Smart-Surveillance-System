@@ -61,6 +61,7 @@ async def _autostart_cameras():
                     person_id=alert_data.get("person_id"),
                     snapshot_bytes=snapshot,
                     meta=alert_data.get("meta"),
+                    status=alert_data.get("status", "confirmed"),
                 )
 
         camera_manager.start_camera(cam.id, cam.source, zones, loop, _alert_cb)

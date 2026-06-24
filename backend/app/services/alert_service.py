@@ -17,6 +17,7 @@ async def save_alert(
     person_id: Optional[int] = None,
     snapshot_bytes: Optional[bytes] = None,
     meta: Optional[dict] = None,
+    status: str = "confirmed",
 ):
     snapshot_path = None
     if snapshot_bytes:
@@ -34,6 +35,7 @@ async def save_alert(
         person_id=person_id,
         snapshot_path=snapshot_path,
         meta=meta,
+        status=status,
     )
     db.add(alert)
 

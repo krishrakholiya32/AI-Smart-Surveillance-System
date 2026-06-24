@@ -30,7 +30,7 @@ export interface Zone {
 export interface AlertRecord {
   id: number; camera_id: number; alert_type: string; message: string
   person_id: number | null; snapshot_path: string | null; meta: Record<string,unknown> | null
-  created_at: string
+  status: string; created_at: string
 }
 export interface EventRecord {
   id: number; camera_id: number | null; level: string; message: string; created_at: string
@@ -58,6 +58,8 @@ export const alertsApi = {
   list: (params?: {camera_id?:number; alert_type?:string; limit?:number; offset?:number}) =>
     api.get<AlertRecord[]>('/alerts', { params }).then(r => r.data),
   delete: (id: number) => api.delete(`/alerts/${id}`),
+  setStatus: (id: number, status: 'confirmed' | 'dismissed') =>
+    api.patch<AlertRecord>(`/alerts/${id}`, { status }).then(r => r.data),
   snapshotUrl: (id: number) => `/api/alerts/${id}/snapshot`,
 }
 

@@ -229,27 +229,72 @@ class DetectionPipeline:
             self.last_pose_kps = kps_list
 
         # ── Weapon detection (every 3 frames) ──────────────────────────────
+        # Runs on high-res crops around each detected person instead of the
+        # full frame squashed to 320x240 — a gun/knife is only a handful of
+        # pixels in a full-scene shot at that resolution, which was hurting
+        # recall. Cropping to person-sized regions gives the model far more
+        # effective resolution on the actual object. Capped at MAX_CROPS
+        # (largest/closest people first) to bound worst-case cost in a
+        # crowded scene; falls back to a full-frame pass when no person is
+        # detected, so a weapon with nobody attached isn't missed entirely.
         if self.frame_count % 3 == 0:
-            res = self.weapon_model(small, imgsz=320, verbose=False)[0]
+            MAX_CROPS = 4
             raw_w = []
-            for box in res.boxes:
-                cls_id = int(box.cls[0])
-                if cls_id in ACTIVE_WEAPON_IDS and float(box.conf[0]) >= cfg.CONF_WEAPON:
-                    bx1, by1, bx2, by2 = map(int, box.xyxy[0])
-                    raw_w.append((int(bx1 * SX), int(by1 * SY),
-                                  int(bx2 * SX), int(by2 * SY),
-                                  float(box.conf[0]), cls_id))
+            if self.last_person_data:
+                H, W = frame.shape[:2]
+                people = sorted(
+                    self.last_person_data,
+                    key=lambda b: (b[2] - b[0]) * (b[3] - b[1]),
+                    reverse=True,
+                )[:MAX_CROPS]
+                crops, offsets = [], []
+                for (px1, py1, px2, py2) in people:
+                    pad_x, pad_y = int((px2 - px1) * 0.25), int((py2 - py1) * 0.15)
+                    cx1, cy1 = max(0, px1 - pad_x), max(0, py1 - pad_y)
+                    cx2, cy2 = min(W, px2 + pad_x), min(H, py2 + pad_y)
+                    crop = frame[cy1:cy2, cx1:cx2]
+                    if crop.size == 0:
+                        continue
+                    crops.append(crop)
+                    offsets.append((cx1, cy1))
+
+                if crops:
+                    crop_results = self.weapon_model(crops, imgsz=320, verbose=False)
+                    for res, (ox, oy) in zip(crop_results, offsets):
+                        for box in res.boxes:
+                            cls_id = int(box.cls[0])
+                            if cls_id in ACTIVE_WEAPON_IDS and float(box.conf[0]) >= cfg.CONF_WEAPON:
+                                bx1, by1, bx2, by2 = map(int, box.xyxy[0])
+                                raw_w.append((bx1 + ox, by1 + oy, bx2 + ox, by2 + oy,
+                                              float(box.conf[0]), cls_id))
+            else:
+                res = self.weapon_model(small, imgsz=320, verbose=False)[0]
+                for box in res.boxes:
+                    cls_id = int(box.cls[0])
+                    if cls_id in ACTIVE_WEAPON_IDS and float(box.conf[0]) >= cfg.CONF_WEAPON:
+                        bx1, by1, bx2, by2 = map(int, box.xyxy[0])
+                        raw_w.append((int(bx1 * SX), int(by1 * SY),
+                                      int(bx2 * SX), int(by2 * SY),
+                                      float(box.conf[0]), cls_id))
+
             raw_w = nms_boxes(raw_w, 0.40)
             confirmed_w = self.weapon_smoother.update(raw_w)
             self.last_weapon_data = [(x1, y1, x2, y2, cid) for x1, y1, x2, y2, _, cid in confirmed_w]
 
+            # Weapon alerts start as "pending" rather than firing as an
+            # immediately-confirmed incident — no detector here is reliable
+            # enough to skip human review, so these surface in the Alerts
+            # page for a human to confirm or dismiss rather than triggering
+            # a full alarm on a single (even if temporally-smoothed) model
+            # detection.
             for _, _, _, _, cls_id in self.last_weapon_data:
                 wname = WEAPON_NAMES.get(cls_id, "THREAT")
                 if self._should_alert(f"weapon_{cls_id}", cfg.CD_WEAPON):
                     new_alerts.append({
                         "type": "weapon",
-                        "message": f"{wname} DETECTED!",
-                        "meta": {"weapon_type": wname.lower()}
+                        "message": f"{wname} DETECTED — pending review",
+                        "meta": {"weapon_type": wname.lower()},
+                        "status": "pending",
                     })
 
         # ── Tracker update ──────────────────────────────────────────────────

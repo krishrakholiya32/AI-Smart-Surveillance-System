@@ -89,6 +89,7 @@ async def start_camera(camera_id: int, db: AsyncSession = Depends(get_db), _=Dep
                 person_id=alert_data.get("person_id"),
                 snapshot_bytes=snapshot,
                 meta=alert_data.get("meta"),
+                status=alert_data.get("status", "confirmed"),
             )
 
     camera_manager.start_camera(camera_id, cam.source, zones, loop, alert_cb)

@@ -16,6 +16,7 @@ class Alert(Base):
     person_id: Mapped[int | None] = mapped_column(nullable=True)
     snapshot_path: Mapped[str | None] = mapped_column(String(512), nullable=True)
     meta: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    status: Mapped[str] = mapped_column(String(16), default="confirmed")  # pending, confirmed, dismissed
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     camera: Mapped["Camera"] = relationship("Camera", back_populates="alerts")
