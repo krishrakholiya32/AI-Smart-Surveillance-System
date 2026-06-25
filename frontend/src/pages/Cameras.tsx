@@ -5,8 +5,9 @@ import { useStore } from '../store'
 import { Play, Square, Trash2, ExternalLink } from 'lucide-react'
 
 export default function Cameras() {
-  const cameras    = useStore(s => s.cameras)
-  const setCameras = useStore(s => s.setCameras)
+  const cameras      = useStore(s => s.cameras)
+  const setCameras   = useStore(s => s.setCameras)
+  const clearMetrics = useStore(s => s.clearMetrics)
   const [running, setRunning] = useState<Record<number, boolean>>({})
   const [adding, setAdding]   = useState(false)
   const [form, setForm]       = useState({ name: '', source: 'http://host.docker.internal:8765/video' })
@@ -32,6 +33,7 @@ export default function Cameras() {
     if (running[id]) {
       await camerasApi.stop(id)
       setRunning(r => ({ ...r, [id]: false }))
+      clearMetrics(id)
     } else {
       await camerasApi.start(id)
       setRunning(r => ({ ...r, [id]: true }))

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { camerasApi, zonesApi, type Camera, type Zone } from '../api/client'
 import VideoFeed from '../components/VideoFeed'
 import ZoneCanvas from '../components/ZoneCanvas'
@@ -43,6 +44,10 @@ export default function CameraView() {
     <div className="space-y-4">
       {/* Header */}
       <div>
+        <Link to="/"
+          className="inline-flex items-center gap-1 text-cyber-muted hover:text-cyber-cyan text-xs font-mono mb-2 transition-colors">
+          <ArrowLeft size={12} /> BACK TO DASHBOARD
+        </Link>
         <h2 className="font-mono text-cyber-cyan tracking-widest">
           {camera?.name ?? `CAMERA ${cameraId}`}
         </h2>

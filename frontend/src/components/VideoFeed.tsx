@@ -13,6 +13,7 @@ interface Props {
 export default function VideoFeed({ cameraId, cameraName, compact }: Props) {
   const { frame, connected, clearFrame } = useVideoStream(cameraId)
   const metrics = useStore(s => s.metrics[cameraId])
+  const clearMetrics = useStore(s => s.clearMetrics)
 
   const [running, setRunning] = useState(false)
   const [toggling, setToggling] = useState(false)
@@ -28,6 +29,7 @@ export default function VideoFeed({ cameraId, cameraName, compact }: Props) {
         await camerasApi.stop(cameraId)
         setRunning(false)
         clearFrame()
+        clearMetrics(cameraId)
       } else {
         await camerasApi.start(cameraId)
         setRunning(true)

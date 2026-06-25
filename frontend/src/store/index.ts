@@ -18,6 +18,7 @@ interface AppState {
   setCameras: (c: Camera[]) => void
   setActiveCamera: (id: number | null) => void
   updateMetrics: (cameraId: number, m: StreamMetrics) => void
+  clearMetrics: (cameraId: number) => void
   addAlert: (a: AlertRecord) => void
   bumpAlertCount: () => void
 }
@@ -41,6 +42,12 @@ export const useStore = create<AppState>((set) => ({
 
   updateMetrics: (cameraId, m) =>
     set((s) => ({ metrics: { ...s.metrics, [cameraId]: m } })),
+
+  clearMetrics: (cameraId) =>
+    set((s) => {
+      const { [cameraId]: _removed, ...rest } = s.metrics
+      return { metrics: rest }
+    }),
 
   addAlert: (a) =>
     set((s) => ({
