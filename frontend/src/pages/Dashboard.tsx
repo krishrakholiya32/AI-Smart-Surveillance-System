@@ -51,10 +51,10 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className={`grid gap-4 ${cameras.length === 1 ? 'grid-cols-1' : cameras.length <= 4 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-          {cameras.map(cam => (
+          {[...cameras].sort((a, b) => a.id - b.id).map((cam, idx) => (
             <div key={cam.id} className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-mono text-cyber-dim text-sm">{cam.name}</span>
+                <span className="font-mono text-cyber-dim text-sm">#{idx} {cam.name}</span>
                 <Link to={`/camera/${cam.id}`}
                   className="text-xs text-cyber-cyan hover:underline font-mono">
                   EXPAND →

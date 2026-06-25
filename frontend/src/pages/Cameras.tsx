@@ -101,11 +101,14 @@ export default function Cameras() {
         </div>
       ) : (
         <div className="space-y-2">
-          {cameras.map(cam => (
+          {[...cameras].sort((a, b) => a.id - b.id).map((cam, idx) => (
             <div key={cam.id}
               className="bg-cyber-surface border border-cyber-border rounded-lg px-4 py-3 flex items-center gap-4">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs text-cyber-muted border border-cyber-border rounded px-1.5 py-0.5" title="Position in list, not the internal camera ID">
+                    #{idx}
+                  </span>
                   <span className="font-sans font-semibold text-cyber-dim">{cam.name}</span>
                   <span className={`text-xs font-mono px-1.5 py-0.5 rounded border ${
                     running[cam.id]

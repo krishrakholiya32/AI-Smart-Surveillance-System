@@ -37,3 +37,15 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Hardcoded fallback values for the Settings UI's "reset to default" action.
+# Intentionally independent of .env — on a fresh deploy (e.g. Oracle), .env
+# may itself hold tuned values, and "reset" should mean "back to factory",
+# not "back to whatever .env currently says".
+DEFAULT_THRESHOLDS = {
+    "CONF_PERSON": 0.50,
+    "CONF_WEAPON": 0.65,
+    "RUN_THRESH_NORM": 0.18,
+    "LOITER_SECS": 8,
+    "CROWD_LIMIT": 5,
+}

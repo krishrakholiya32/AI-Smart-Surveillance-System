@@ -81,4 +81,8 @@ export interface SettingsInfo {
 
 export const settingsApi = {
   get: () => api.get<SettingsInfo>('/settings').then(r => r.data),
+  updateThresholds: (thresholds: Partial<SettingsInfo['thresholds']>) =>
+    api.patch<{ thresholds: SettingsInfo['thresholds'] }>('/settings/thresholds', thresholds).then(r => r.data),
+  resetThresholds: () =>
+    api.post<{ thresholds: SettingsInfo['thresholds'] }>('/settings/thresholds/reset').then(r => r.data),
 }
