@@ -30,7 +30,7 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:?ADMIN_USERNAME must be set in .env}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set in .env}
       SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set in .env}
-      ALLOWED_ORIGINS: '["http://localhost", "http://localhost:3000", "http://${SERVER_IP:-localhost}"]'
+      ALLOWED_ORIGINS: '["http://localhost", "http://localhost:3000", "http://${SERVER_IP:-localhost}", "https://${SERVER_IP:-localhost}"]'
       # Match thread pools to the CPU quota below — without this, PyTorch/ONNX
       # Runtime detect the host's full core count and oversubscribe threads,
       # causing scheduling thrash that's slower than capping threads correctly.
@@ -74,9 +74,22 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/common-locations.conf:/etc/nginx/common-locations.conf:ro
       - ./nginx/certs:/etc/nginx/certs:ro
+      - certbot_webroot:/var/www/certbot:ro
       - alert_storage:/app/storage/alerts:ro
+
+  # One-shot/manual use — not started by `docker compose up`. Issues or
+  # renews the real Let's Encrypt cert once a domain points at this host.
+  # See DEPLOY.md for the exact commands.
+  certbot:
+    image: certbot/certbot
+    profiles: ["certbot"]
+    volumes:
+      - ./nginx/certs:/etc/letsencrypt
+      - certbot_webroot:/var/www/certbot
 
 volumes:
   pgdata:
   alert_storage:
+  certbot_webroot:

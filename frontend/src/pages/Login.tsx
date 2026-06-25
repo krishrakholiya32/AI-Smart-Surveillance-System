@@ -19,8 +19,8 @@ export default function Login() {
       const res = await api.post<{ access_token: string }>('/auth/login', { username, password })
       setToken(res.data.access_token)
       navigate('/')
-    } catch {
-      setError('Invalid credentials')
+    } catch (err: any) {
+      setError(err?.response?.data?.detail ?? 'Invalid credentials')
     } finally {
       setLoading(false)
     }

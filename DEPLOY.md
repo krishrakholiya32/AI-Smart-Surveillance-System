@@ -40,19 +40,21 @@ Wait ~2 minutes. Note the **Public IP address**.
 
 ## Step 3 — Configure Security (Open ports)
 
-OCI blocks all ports by default. **This deployment is accessed by raw IP over plain HTTP (no domain, no TLS)** — so restrict who can even reach port 80, rather than relying on HTTPS to protect it.
+OCI blocks all ports by default.
 
 1. Compute → Instances → Your instance → **Subnet** link → **Security List**
 2. **Ingress Rules** → Add:
    | Protocol | Port | Source CIDR | Description |
    |---|---|---|---|
    | TCP | 22 | Your home/known IP only (e.g. `203.0.113.5/32`) | SSH |
-   | TCP | 80 | Your home/known IP only, or `0.0.0.0/0` if you need access from anywhere | HTTP |
+   | TCP | 80 | `0.0.0.0/0` | HTTP — needed publicly for the Let's Encrypt challenge, and to redirect to HTTPS |
+   | TCP | 443 | `0.0.0.0/0` | HTTPS — the actual app, once you've pointed a domain at this VM |
 
    Avoid `0.0.0.0/0` for SSH. If your IP changes, update the rule rather than opening it to everyone.
-3. Also open OS firewall on the VM (matching the same restriction):
+3. Also open the OS firewall on the VM (matching the same restriction):
 ```bash
 sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+sudo iptables -I INPUT -p tcp --dport 443 -j ACCEPT
 sudo iptables -I INPUT -p tcp --dport 22 -j ACCEPT
 sudo iptables-save | sudo tee /etc/iptables/rules.v4
 ```
@@ -131,10 +133,19 @@ SERVER_IP=<your VM public IP>
 
 ---
 
-## Step 8 — Build and Launch
+## Step 8 — Bootstrap a Certificate, Then Build and Launch
+
+nginx listens on 443 unconditionally, so it needs *some* certificate file
+present before it'll start — even a temporary one:
 
 ```bash
 cd ~/surveillance
+bash scripts/init_certs.sh    # generates a self-signed cert into nginx/certs/
+```
+
+Then build and launch as normal:
+
+```bash
 docker compose build
 docker compose up -d
 
@@ -149,7 +160,7 @@ NAME          STATUS    PORTS
 db            running   5432/tcp
 backend       running   0.0.0.0:8000->8000/tcp
 frontend      running   0.0.0.0:3000->80/tcp
-nginx         running   0.0.0.0:80->80/tcp
+nginx         running   0.0.0.0:80->80/tcp, 0.0.0.0:443->443/tcp
 ```
 
 First boot will take 1-2 minutes longer than usual — the backend exports the YOLO models to ONNX once before starting. Watch `docker compose logs -f backend` to see progress.
@@ -158,7 +169,9 @@ First boot will take 1-2 minutes longer than usual — the backend exports the Y
 
 ## Step 9 — Access the System
 
-Open your browser: **http://YOUR_VM_IP**
+Open your browser: **https://YOUR_VM_IP** (you'll get a "not trusted" warning
+from the self-signed bootstrap cert — that's expected until Step 10).
+Plain `http://YOUR_VM_IP` still works too at this point.
 
 Login with:
 - Username: `admin`
@@ -174,13 +187,53 @@ Login with:
 
 ---
 
-## Step 10 — Accepting HTTP-only access (no domain)
+## Step 10 — Switch to a Real Let's Encrypt Certificate
 
-This deployment has no domain name, so Let's Encrypt/HTTPS isn't an option (it requires a domain to issue a certificate against). The system is reached over plain HTTP at `http://YOUR_VM_IP`. To keep that reasonably safe:
+So far you're running on the self-signed cert from `scripts/init_certs.sh` —
+browsers will show a "not trusted" warning at `https://YOUR_VM_IP`. Once you
+have a domain, replace it with a real one:
 
-- Keep the Step 3 security list locked to your own IP rather than `0.0.0.0/0` wherever practical.
-- Make sure `.env` has a long random `SECRET_KEY` (`openssl rand -hex 32`) and a strong, unique `ADMIN_PASSWORD` — the app now refuses to start without both set.
-- If you later buy or already own a domain, point an A record at the VM's IP and revisit this step — `nginx/nginx.conf` already has a commented-out HTTPS server block ready to uncomment once you have a certificate.
+1. **Point DNS at the VM.** Create an A record for your domain (e.g.
+   `surveillance.example.com`) pointing at the VM's public IP. Wait for it
+   to propagate (`dig +short surveillance.example.com` should return the IP).
+
+2. **Confirm port 80 is reachable from the internet** (Step 3) — Let's
+   Encrypt's HTTP-01 challenge needs it, even though the app itself will
+   end up served on 443.
+
+3. **Issue the certificate** using the `certbot` service already defined in
+   `docker-compose.yml` (it doesn't start automatically — `--profile certbot`
+   opts it in for this one-off run):
+   ```bash
+   docker compose --profile certbot run --rm certbot certonly \
+     --webroot --webroot-path=/var/www/certbot \
+     -d surveillance.example.com \
+     --email you@example.com --agree-tos --no-eff-email
+   ```
+   This writes `live/surveillance.example.com/fullchain.pem` and `privkey.pem`
+   under `nginx/certs/` (the container's `/etc/letsencrypt`).
+
+4. **Point nginx at the real cert.** Either symlink the issued files over the
+   self-signed ones, or edit the two `ssl_certificate*` lines in
+   `nginx/nginx.conf` to the `live/surveillance.example.com/` paths:
+   ```bash
+   ln -sf live/surveillance.example.com/fullchain.pem nginx/certs/fullchain.pem
+   ln -sf live/surveillance.example.com/privkey.pem   nginx/certs/privkey.pem
+   docker compose restart nginx
+   ```
+
+5. **Force HTTPS.** Uncomment the `return 301 https://$host$request_uri;`
+   line in the `:80` server block of `nginx/nginx.conf`, then
+   `docker compose restart nginx`.
+
+6. **Set up auto-renewal.** Let's Encrypt certs expire every 90 days. Add a
+   host cron job:
+   ```bash
+   (crontab -l 2>/dev/null; echo "0 3 * * * cd ~/surveillance && docker compose --profile certbot run --rm certbot renew && docker compose restart nginx") | crontab -
+   ```
+
+After this, access the app at `https://surveillance.example.com` with no
+browser warning, and `http://` requests auto-redirect to it.
 
 ---
 
@@ -235,7 +288,10 @@ The backend's worker is paced to a 10 FPS target, so anything above that is head
 | Problem | Fix |
 |---|---|
 | Backend fails to start | Check `docker compose logs backend` — usually a missing `SECRET_KEY`/`ADMIN_PASSWORD` in `.env`, wrong `DATABASE_URL`, or missing model files |
-| Can't reach port 80 | Check OCI Security List ingress rules AND OS iptables rules |
+| Can't reach port 80/443 | Check OCI Security List ingress rules AND OS iptables rules |
+| nginx won't start at all | It needs cert files to exist before listening on 443 — run `bash scripts/init_certs.sh` first |
 | Models not loading | Ensure `.pt` files are in `~/surveillance/models/` |
 | Low FPS on cloud | Confirm `.onnx` files exist in `~/surveillance/models/` after first boot — if not, check backend logs for export errors |
 | WebSocket won't connect | Ensure nginx is forwarding `/ws/` correctly; check browser console |
+| Locked out of login | 5 failed attempts locks that username for 15 minutes (in-memory, resets on backend restart) — just wait it out |
+| Certbot challenge fails | Confirm DNS has propagated (`dig +short your-domain.com`) and port 80 is reachable from the public internet, not just your IP |
