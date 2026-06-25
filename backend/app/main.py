@@ -64,7 +64,7 @@ async def _autostart_cameras():
                     status=alert_data.get("status", "confirmed"),
                 )
 
-        camera_manager.start_camera(cam.id, cam.source, zones, loop, _alert_cb)
+        camera_manager.start_camera(cam.id, cam.source, zones, loop, _alert_cb, cam.width, cam.height)
         log.info(f"Auto-started camera {cam.id} ({cam.name})")
 
 

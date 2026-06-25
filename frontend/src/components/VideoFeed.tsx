@@ -11,7 +11,7 @@ interface Props {
 }
 
 export default function VideoFeed({ cameraId, cameraName, compact }: Props) {
-  const { frame, connected } = useVideoStream(cameraId)
+  const { frame, connected, clearFrame } = useVideoStream(cameraId)
   const metrics = useStore(s => s.metrics[cameraId])
 
   const [running, setRunning] = useState(false)
@@ -27,6 +27,7 @@ export default function VideoFeed({ cameraId, cameraName, compact }: Props) {
       if (running) {
         await camerasApi.stop(cameraId)
         setRunning(false)
+        clearFrame()
       } else {
         await camerasApi.start(cameraId)
         setRunning(true)
@@ -71,7 +72,7 @@ export default function VideoFeed({ cameraId, cameraName, compact }: Props) {
 
       {/* Video */}
       {frame ? (
-        <img src={frame} alt="live feed" className="w-full h-auto block" />
+        <img src={frame} alt="live feed" className="w-full max-h-[70vh] h-auto object-contain mx-auto block" />
       ) : (
         <div className={`flex items-center justify-center text-cyber-muted font-mono text-sm ${compact ? 'h-48' : 'h-96'}`}>
           {connected ? 'Waiting for frames…' : 'Camera not streaming'}

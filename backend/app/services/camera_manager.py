@@ -41,8 +41,10 @@ class _FrameGrabber:
     when the detection pipeline is slower than the source frame rate.
     Auto-reconnects when the stream drops.
     """
-    def __init__(self, source):
+    def __init__(self, source, width=640, height=480):
         self._source = source
+        self._width = width
+        self._height = height
         self._cap = self._open()
         self._lock = threading.Lock()
         self._frame: Optional[np.ndarray] = None
@@ -52,8 +54,8 @@ class _FrameGrabber:
 
     def _open(self):
         cap = cv2.VideoCapture(self._source)
-        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._width)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self._height)
         cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
         return cap
 
@@ -120,13 +122,13 @@ def _broadcast(camera_id: int, payload: dict, loop: asyncio.AbstractEventLoop):
 
 def _worker(camera_id: int, source: str, zones: List[dict],
             stop_event: threading.Event, loop: asyncio.AbstractEventLoop,
-            alert_callback):
+            alert_callback, width: int = 640, height: int = 480):
     models = get_models()
     pipeline = DetectionPipeline(models, zones, settings)
     with _pipelines_lock:
         _pipelines[camera_id] = pipeline
 
-    grabber = _FrameGrabber(source if source != "0" else 0)
+    grabber = _FrameGrabber(source if source != "0" else 0, width, height)
     log.info(f"Camera {camera_id} worker started (source={source})")
 
     # Wait up to 5s for first frame
@@ -182,13 +184,14 @@ def _worker(camera_id: int, source: str, zones: List[dict],
 
 
 def start_camera(camera_id: int, source: str, zones: List[dict],
-                 loop: asyncio.AbstractEventLoop, alert_callback=None):
+                 loop: asyncio.AbstractEventLoop, alert_callback=None,
+                 width: int = 640, height: int = 480):
     if camera_id in _workers:
         stop_camera(camera_id)
     stop_event = threading.Event()
     t = threading.Thread(
         target=_worker,
-        args=(camera_id, source, zones, stop_event, loop, alert_callback),
+        args=(camera_id, source, zones, stop_event, loop, alert_callback, width, height),
         daemon=True,
     )
     _workers[camera_id] = (t, stop_event)

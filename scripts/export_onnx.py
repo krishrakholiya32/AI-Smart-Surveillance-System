@@ -20,7 +20,7 @@ for pt_name, _ in MODELS:
         continue
     print(f"  Exporting {pt_name} → ONNX …")
     m = YOLO(pt_path)
-    m.export(format="onnx", imgsz=320, simplify=True, opset=17)
+    m.export(format="onnx", imgsz=320, simplify=True, opset=17, dynamic=True)
     print(f"  Done: {pt_path.replace('.pt', '.onnx')}")
 
 print("\nAll exports complete. The backend prefers ONNX automatically.")

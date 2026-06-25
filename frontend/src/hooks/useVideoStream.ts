@@ -47,5 +47,7 @@ export function useVideoStream(cameraId: number | null) {
     return () => wsRef.current?.close()
   }, [connect])
 
-  return { frame, connected }
+  const clearFrame = useCallback(() => setFrame(null), [])
+
+  return { frame, connected, clearFrame }
 }

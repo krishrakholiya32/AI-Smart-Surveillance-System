@@ -92,7 +92,7 @@ async def start_camera(camera_id: int, db: AsyncSession = Depends(get_db), _=Dep
                 status=alert_data.get("status", "confirmed"),
             )
 
-    camera_manager.start_camera(camera_id, cam.source, zones, loop, alert_cb)
+    camera_manager.start_camera(camera_id, cam.source, zones, loop, alert_cb, cam.width, cam.height)
     cam.is_active = True
     await db.commit()
     return {"status": "started", "camera_id": camera_id}

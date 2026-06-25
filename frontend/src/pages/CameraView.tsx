@@ -76,6 +76,7 @@ export default function CameraView() {
             Draw restricted zones — alerts fire when people enter these areas.
           </p>
           <ZoneCanvas
+            cameraId={cameraId}
             width={camera?.width ?? 640}
             height={camera?.height ?? 480}
             existingZones={zones}

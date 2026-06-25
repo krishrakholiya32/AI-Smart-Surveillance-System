@@ -1,7 +1,9 @@
 import { useRef, useState, useEffect, useCallback } from 'react'
 import type { Zone } from '../api/client'
+import { useVideoStream } from '../hooks/useVideoStream'
 
 interface Props {
+  cameraId: number
   width: number
   height: number
   existingZones: Zone[]
@@ -11,12 +13,20 @@ interface Props {
 
 const COLORS = ['#0050dc', '#00ff99', '#ffaa00', '#ff4b4b', '#cc44ff']
 
-export default function ZoneCanvas({ width, height, existingZones, onSave, onDelete }: Props) {
+export default function ZoneCanvas({ cameraId, width: fallbackWidth, height: fallbackHeight, existingZones, onSave, onDelete }: Props) {
+  const { frame } = useVideoStream(cameraId)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [points, setPoints] = useState<number[][]>([])
   const [drawing, setDrawing] = useState(false)
   const [zoneName, setZoneName] = useState('Zone 1')
   const [color, setColor] = useState(COLORS[0])
+  // The DB-stored camera width/height can drift from what the source actually
+  // delivers (network streams ignore requested capture resolution). The live
+  // frame's natural size is ground truth — use it once available so drawn
+  // zones land on the exact pixels the detection pipeline checks against.
+  const [naturalSize, setNaturalSize] = useState<{ w: number; h: number } | null>(null)
+  const width = naturalSize?.w ?? fallbackWidth
+  const height = naturalSize?.h ?? fallbackHeight
 
   const draw = useCallback(() => {
     const canvas = canvasRef.current
@@ -119,11 +129,27 @@ export default function ZoneCanvas({ width, height, existingZones, onSave, onDel
         )}
       </div>
 
-      <div className="relative w-full">
-        <div className="bg-cyber-bg rounded border border-cyber-border text-cyber-muted font-mono text-sm flex items-center justify-center"
-          style={{ height: `${height * 0.6}px` }}>
-          <span className="text-xs opacity-50">Video frame reference</span>
-        </div>
+      <div className="relative w-full bg-cyber-bg rounded border border-cyber-border overflow-hidden"
+        style={{ aspectRatio: `${width} / ${height}` }}>
+        {frame ? (
+          <img
+            src={frame}
+            alt="live feed"
+            className="absolute inset-0 w-full h-full object-fill"
+            onLoad={(e) => {
+              const img = e.currentTarget
+              setNaturalSize(prev =>
+                prev?.w === img.naturalWidth && prev?.h === img.naturalHeight
+                  ? prev
+                  : { w: img.naturalWidth, h: img.naturalHeight }
+              )
+            }}
+          />
+        ) : (
+          <div className="absolute inset-0 flex items-center justify-center text-cyber-muted font-mono text-sm">
+            <span className="text-xs opacity-50">Start the camera to see a live reference frame</span>
+          </div>
+        )}
         <canvas
           ref={canvasRef}
           width={width}
