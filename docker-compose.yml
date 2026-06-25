@@ -37,6 +37,13 @@ services:
       OMP_NUM_THREADS: "${BACKEND_CPU_LIMIT:-3}"
       OPENBLAS_NUM_THREADS: "${BACKEND_CPU_LIMIT:-3}"
       MKL_NUM_THREADS: "${BACKEND_CPU_LIMIT:-3}"
+      # Detection tuning — sets the *startup* defaults only. The Settings
+      # page can change these live afterward without a restart.
+      CONF_PERSON: "${CONF_PERSON:-0.50}"
+      CONF_WEAPON: "${CONF_WEAPON:-0.45}"
+      RUN_THRESH_NORM: "${RUN_THRESH_NORM:-0.18}"
+      LOITER_SECS: "${LOITER_SECS:-8}"
+      CROWD_LIMIT: "${CROWD_LIMIT:-5}"
     volumes:
       - ./models:/app/models          # .pt / .onnx files live here (writable: ONNX export runs on first boot)
       - alert_storage:/app/storage/alerts
