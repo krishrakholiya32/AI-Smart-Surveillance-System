@@ -52,7 +52,6 @@ export default function Settings() {
             ['Zone intrusion',         '✓', 'Keypoint-aware polygon zones'],
             ['Running detection',      '✓', 'EMA speed-based'],
             ['Loitering detection',    '✓', 'Dwell-time based'],
-            ['Fall detection',         '✓', 'Pose angle analysis'],
             ['Crowd detection',        '✓', 'Configurable people limit'],
             ['Person re-identification','✓', 'Centroid + velocity + IoU'],
           ].map(([feat, status, desc]) => (

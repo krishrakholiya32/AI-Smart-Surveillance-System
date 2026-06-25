@@ -1,6 +1,6 @@
 """
 Full per-frame detection pipeline.
-Handles: person, pose, weapon, zone intrusion, running, loitering, fall, crowd.
+Handles: person, pose, weapon, zone intrusion, running, loitering, crowd.
 """
 import time
 from collections import defaultdict
@@ -68,25 +68,6 @@ def match_pose_to_person(kps, box) -> bool:
     return x1 <= px <= x2 and y1 <= py <= y2
 
 
-# ─── Fall detection ─────────────────────────────────────────────────────────
-
-def is_fallen(kps) -> bool:
-    """Detect fall: head keypoint (nose) is at approximately the same height as hips/knees."""
-    if kps is None or kps.shape[0] < 17:
-        return False
-    nose = kps[0]
-    if nose[2] < KP_CONF_THRESH:
-        return False
-    hip_pts = [kps[i] for i in [11, 12] if kps[i, 2] >= KP_CONF_THRESH]
-    if not hip_pts:
-        return False
-    avg_hip_y = sum(p[1] for p in hip_pts) / len(hip_pts)
-    nose_y = nose[1]
-    # Nose is within 30% of body height from hips → person is horizontal
-    body_span = abs(avg_hip_y - nose_y)
-    return body_span < 50 and abs(nose_y - avg_hip_y) < 80
-
-
 # ─── Drawing helpers ─────────────────────────────────────────────────────────
 
 def draw_label(frame, text, x, y, color):
@@ -140,7 +121,7 @@ def draw_hud(frame, counts):
     cv2.putText(frame, f"● REC  {ts}", (8, 20), FONT, 0.45, (0, 200, 255), 1, cv2.LINE_AA)
     info = (f"PEOPLE:{counts['people']}  GUN:{counts.get('gun', 0)}  "
             f"KNIFE:{counts.get('knife', 0)}  RUN:{counts.get('running', 0)}  "
-            f"LOIT:{counts.get('loiter', 0)}  FALL:{counts.get('fall', 0)}")
+            f"LOIT:{counts.get('loiter', 0)}")
     cv2.putText(frame, info, (8, h - 10), FONT, 0.40, (80, 120, 160), 1, cv2.LINE_AA)
 
 
@@ -172,11 +153,6 @@ class DetectionPipeline:
         self.last_alert_time: Dict[str, float] = defaultdict(float)
         self.zone_frames:     Dict = defaultdict(lambda: defaultdict(int))
         self.zone_alerted:    Dict = defaultdict(lambda: defaultdict(float))
-
-        # Fall state: consecutive frames person appears fallen
-        self.fall_frames: Dict[int, int] = defaultdict(int)
-        FALL_CONFIRM = 3
-        self.FALL_CONFIRM = FALL_CONFIRM
 
     def update_zones(self, zones: List[dict]):
         self.zones = zones
@@ -309,7 +285,6 @@ class DetectionPipeline:
 
         running_count = 0
         loiter_count  = 0
-        fall_count    = 0
         active_ids    = set()
 
         for oid, (cx, cy) in tracked.items():
@@ -347,27 +322,11 @@ class DetectionPipeline:
                 if color == (60, 220, 80):
                     color = (0, 200, 255)
 
-            # Fall detection
             matched_kps = None
             for kps in self.last_pose_kps:
                 if match_pose_to_person(kps, (x1, y1, x2, y2)):
                     matched_kps = kps
                     break
-
-            if matched_kps is not None and is_fallen(matched_kps):
-                self.fall_frames[oid] = self.fall_frames.get(oid, 0) + 1
-                if self.fall_frames[oid] >= self.FALL_CONFIRM:
-                    fall_count += 1
-                    tags.append("FALL")
-                    color = (0, 50, 255)
-                    if self._should_alert(f"fall_{oid}", cfg.CD_FALL):
-                        new_alerts.append({
-                            "type": "fall",
-                            "message": f"Person #{oid} appears to have FALLEN",
-                            "person_id": oid
-                        })
-            else:
-                self.fall_frames[oid] = max(0, self.fall_frames.get(oid, 0) - 1)
 
             # Zone intrusion
             for zone, zone_arr in zone_arrays:
@@ -409,9 +368,6 @@ class DetectionPipeline:
         for oid in list(self.zone_alerted.keys()):
             if oid not in active_ids:
                 del self.zone_alerted[oid]
-        for oid in list(self.fall_frames.keys()):
-            if oid not in active_ids:
-                del self.fall_frames[oid]
 
         # ── Crowd count ─────────────────────────────────────────────────────
         if len(self.last_person_data) >= cfg.CROWD_LIMIT:
@@ -443,7 +399,6 @@ class DetectionPipeline:
             "knife": knife_cnt,
             "running": running_count,
             "loiter": loiter_count,
-            "fall": fall_count,
             "fps": round(self.fps_v, 1),
         }
         draw_hud(frame, metrics)

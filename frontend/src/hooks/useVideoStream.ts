@@ -6,7 +6,7 @@ interface StreamPayload {
   frame: string        // base64 JPEG
   metrics: {
     people: number; gun: number; knife: number
-    running: number; loiter: number; fall: number; fps: number
+    running: number; loiter: number; fps: number
   }
   alerts: { type: string; message: string; person_id?: number }[]
   ts: number

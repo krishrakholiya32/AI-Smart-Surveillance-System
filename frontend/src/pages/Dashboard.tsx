@@ -20,9 +20,8 @@ export default function Dashboard() {
       people: acc.people + m.people,
       gun:    acc.gun    + m.gun,
       knife:  acc.knife  + m.knife,
-      fall:   acc.fall   + m.fall,
     }),
-    { people: 0, gun: 0, knife: 0, fall: 0 }
+    { people: 0, gun: 0, knife: 0 }
   )
 
   return (
@@ -36,10 +35,9 @@ export default function Dashboard() {
       </div>
 
       {/* Global metrics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-3 gap-3">
         <MetricsCard label="PEOPLE" value={totals.people} />
         <MetricsCard label="WEAPONS" value={totals.gun + totals.knife} danger={totals.gun + totals.knife > 0} />
-        <MetricsCard label="FALLS" value={totals.fall} danger={totals.fall > 0} />
         <MetricsCard label="TOTAL ALERTS" value={totalAlerts} warn={totalAlerts > 0} />
       </div>
 

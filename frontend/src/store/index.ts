@@ -3,7 +3,7 @@ import type { Camera, AlertRecord } from '../api/client'
 
 interface StreamMetrics {
   people: number; gun: number; knife: number
-  running: number; loiter: number; fall: number; fps: number
+  running: number; loiter: number; fps: number
 }
 
 interface AppState {

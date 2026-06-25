@@ -11,7 +11,7 @@ class Alert(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     camera_id: Mapped[int] = mapped_column(ForeignKey("cameras.id"))
-    alert_type: Mapped[str] = mapped_column(String(64))   # zone_intrusion, weapon, running, loitering, fall, crowd
+    alert_type: Mapped[str] = mapped_column(String(64))   # zone_intrusion, weapon, running, loitering, crowd
     message: Mapped[str] = mapped_column(String(512))
     person_id: Mapped[int | None] = mapped_column(nullable=True)
     snapshot_path: Mapped[str | None] = mapped_column(String(512), nullable=True)

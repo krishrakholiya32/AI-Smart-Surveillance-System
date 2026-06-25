@@ -89,7 +89,6 @@ export default function VideoFeed({ cameraId, cameraName, compact }: Props) {
           <span className={metrics.knife > 0 ? 'text-cyber-red' : 'text-cyber-muted'}>KNIFE: {metrics.knife}</span>
           <span className={metrics.running > 0 ? 'text-cyber-orange' : 'text-cyber-muted'}>RUN: {metrics.running}</span>
           <span className={metrics.loiter > 0 ? 'text-cyber-orange' : 'text-cyber-muted'}>LOIT: {metrics.loiter}</span>
-          <span className={metrics.fall > 0 ? 'text-cyber-red' : 'text-cyber-muted'}>FALL: {metrics.fall}</span>
           <span className="ml-auto text-cyber-muted">{metrics.fps} FPS</span>
         </div>
       )}

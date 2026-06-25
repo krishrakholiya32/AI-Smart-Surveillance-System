@@ -98,7 +98,6 @@ export default function CameraView() {
           <MetricsCard label="KNIVES" value={metrics?.knife ?? 0} danger={(metrics?.knife ?? 0) > 0} />
           <MetricsCard label="RUNNING" value={metrics?.running ?? 0} warn={(metrics?.running ?? 0) > 0} />
           <MetricsCard label="LOITERING" value={metrics?.loiter ?? 0} warn={(metrics?.loiter ?? 0) > 0} />
-          <MetricsCard label="FALLS" value={metrics?.fall ?? 0} danger={(metrics?.fall ?? 0) > 0} />
           <MetricsCard label="FPS" value={metrics?.fps ?? 0} />
         </div>
       )}

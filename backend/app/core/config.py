@@ -26,7 +26,6 @@ class Settings(BaseSettings):
     CD_ZONE_BODY: float = 8.0
     CD_WEAPON: float = 10.0
     CD_RUN: float = 6.0
-    CD_FALL: float = 12.0
     CD_CROWD: float = 15.0
     CROWD_LIMIT: int = 5
 

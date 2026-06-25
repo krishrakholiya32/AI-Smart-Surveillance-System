@@ -30,7 +30,7 @@ export default function Alerts() {
     setAlerts(prev => prev.map(a => a.id === id ? updated : a))
   }
 
-  const TYPES = ['', 'weapon', 'zone_intrusion', 'running', 'loitering', 'fall', 'crowd']
+  const TYPES = ['', 'weapon', 'zone_intrusion', 'running', 'loitering', 'crowd']
 
   return (
     <div className="space-y-4">
