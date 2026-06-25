@@ -34,7 +34,7 @@ export default function Login() {
             <span className="font-mono text-cyber-cyan text-2xl">AI</span>
           </div>
           <h1 className="font-mono text-cyber-cyan tracking-widest text-lg">SURVEILLANCE SYSTEM</h1>
-          <p className="text-cyber-muted text-sm mt-1">v2.0 — Secure Access</p>
+          <p className="text-cyber-muted text-sm mt-1">Secure Access</p>
         </div>
 
         <form onSubmit={submit} className="bg-cyber-surface border border-cyber-border rounded-lg p-6 space-y-4">
