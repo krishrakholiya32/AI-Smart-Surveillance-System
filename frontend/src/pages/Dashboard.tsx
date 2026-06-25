@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useStore } from '../store'
-import { camerasApi } from '../api/client'
+import { camerasApi, settingsApi } from '../api/client'
 import VideoFeed from '../components/VideoFeed'
 import MetricsCard from '../components/MetricsCard'
 
@@ -10,9 +10,11 @@ export default function Dashboard() {
   const setCameras   = useStore(s => s.setCameras)
   const metrics      = useStore(s => s.metrics)
   const totalAlerts  = useStore(s => s.totalAlerts)
+  const [crowdLimit, setCrowdLimit] = useState(5)
 
   useEffect(() => {
     camerasApi.list().then(setCameras).catch(console.error)
+    settingsApi.get().then(i => setCrowdLimit(i.thresholds.CROWD_LIMIT)).catch(console.error)
   }, [setCameras])
 
   const totals = Object.values(metrics).reduce(
@@ -23,6 +25,10 @@ export default function Dashboard() {
     }),
     { people: 0, gun: 0, knife: 0 }
   )
+
+  // Mirrors the backend's crowd trigger: a camera is "crowded" once its
+  // live person count reaches CROWD_LIMIT (pipeline.py).
+  const crowdedCameras = Object.values(metrics).filter(m => m.people >= crowdLimit).length
 
   return (
     <div className="space-y-6">
@@ -35,9 +41,10 @@ export default function Dashboard() {
       </div>
 
       {/* Global metrics */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <MetricsCard label="PEOPLE" value={totals.people} />
         <MetricsCard label="WEAPONS" value={totals.gun + totals.knife} danger={totals.gun + totals.knife > 0} />
+        <MetricsCard label="CROWD" value={crowdedCameras} warn={crowdedCameras > 0} />
         <MetricsCard label="TOTAL ALERTS" value={totalAlerts} warn={totalAlerts > 0} />
       </div>
 

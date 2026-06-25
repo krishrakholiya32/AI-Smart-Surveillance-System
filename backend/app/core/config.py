@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     MODELS_PATH: str = "/app/models"
 
     CONF_PERSON: float = 0.50
-    CONF_WEAPON: float = 0.65
+    CONF_WEAPON: float = 0.45
     RUN_THRESH_NORM: float = 0.18
     LOITER_SECS: int = 8
     CD_ZONE_BODY: float = 8.0
@@ -44,7 +44,7 @@ settings = Settings()
 # not "back to whatever .env currently says".
 DEFAULT_THRESHOLDS = {
     "CONF_PERSON": 0.50,
-    "CONF_WEAPON": 0.65,
+    "CONF_WEAPON": 0.45,
     "RUN_THRESH_NORM": 0.18,
     "LOITER_SECS": 8,
     "CROWD_LIMIT": 5,
