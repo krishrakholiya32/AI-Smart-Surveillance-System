@@ -12,9 +12,12 @@ try { docker info 2>$null | Out-Null; $dockerRunning = $true } catch {}
 if (-not $dockerRunning) {
     Write-Host "Starting Docker Desktop..."
     Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe"
+    Write-Host "Waiting for Docker engine (this takes ~30s on first launch)..."
+    Start-Sleep 10
     do {
-        Start-Sleep 3
+        Start-Sleep 5
         try { docker info 2>$null | Out-Null; $dockerRunning = $true } catch {}
+        if (-not $dockerRunning) { Write-Host "Still waiting..." }
     } while (-not $dockerRunning)
     Write-Host "Docker is ready."
 }
