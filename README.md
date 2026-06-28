@@ -1,8 +1,17 @@
-# AI Smart Surveillance System
+# 🎥 AI Smart Surveillance System
 
 Real-time, multi-camera threat detection — person tracking, weapon detection, restricted-zone intrusion, running/loitering/crowd detection — running entirely on CPU, with a live web dashboard.
 
+![Python](https://img.shields.io/badge/Python-3.11+-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-green)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
+![YOLO](https://img.shields.io/badge/YOLOv11-Ultralytics-purple)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
+![License](https://img.shields.io/badge/License-MIT-green)
+
 > Originally a single-file Streamlit prototype, rebuilt as a full-stack app: FastAPI backend running the detection pipeline, React dashboard streaming live annotated video over WebSockets, Postgres-backed persistence for cameras/zones/alerts.
+
+**Demo:** see [`assets/demo.mp4`](assets/demo.mp4)
 
 ---
 
