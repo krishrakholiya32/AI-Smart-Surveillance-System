@@ -10,8 +10,8 @@ sqlalchemy==2.0.36
 asyncpg==0.30.0
 
 # Auth
-python-jose[cryptography]==3.3.0
-bcrypt==4.2.1
+pyjwt==2.10.1
+pwdlib[argon2,bcrypt]==0.2.1
 
 # AI/ML
 ultralytics==8.3.52
