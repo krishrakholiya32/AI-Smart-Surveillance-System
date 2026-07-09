@@ -7,23 +7,10 @@
   </defs>
   <rect width="64" height="64" rx="16" fill="#0a0e14"/>
 
-  <!-- wall mount bracket -->
-  <rect x="6" y="20" width="7" height="7" rx="1.5" fill="url(#camGrad)"/>
-  <rect x="10" y="22.5" width="10" height="3" rx="1.5" fill="url(#camGrad)"/>
-
   <!-- camera body -->
-  <rect x="16" y="17" width="30" height="18" rx="5" fill="url(#camGrad)"/>
+  <rect x="10" y="22" width="34" height="20" rx="5" fill="url(#camGrad)"/>
 
-  <!-- lens housing -->
-  <circle cx="46" cy="26" r="12" fill="#0a0e14" stroke="url(#camGrad)" stroke-width="3"/>
-  <circle cx="46" cy="26" r="6.5" fill="url(#camGrad)"/>
-  <circle cx="43.5" cy="23.5" r="2" fill="#eafcff"/>
-
-  <!-- detection scan lines -->
-  <path d="M50 41 L58 50" stroke="#22d3ee" stroke-width="2.4" stroke-linecap="round" opacity="0.85"/>
-  <path d="M46 44 L50.5 55" stroke="#22d3ee" stroke-width="2.4" stroke-linecap="round" opacity="0.55"/>
-  <path d="M54 38 L60.5 44" stroke="#22d3ee" stroke-width="2.4" stroke-linecap="round" opacity="0.55"/>
-
-  <!-- recording indicator -->
-  <circle cx="21" cy="22.5" r="2.2" fill="#ff3b5c"/>
+  <!-- lens -->
+  <circle cx="44" cy="32" r="13" fill="#0a0e14" stroke="url(#camGrad)" stroke-width="3.5"/>
+  <circle cx="44" cy="32" r="7" fill="url(#camGrad)"/>
 </svg>
