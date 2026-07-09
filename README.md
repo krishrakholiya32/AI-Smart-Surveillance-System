@@ -2,16 +2,29 @@
 
 Real-time, multi-camera threat detection — person tracking, weapon detection, restricted-zone intrusion, running/loitering/crowd detection — running entirely on CPU, with a live web dashboard.
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-surveillance.zrik.tech-brightgreen?style=for-the-badge)](https://surveillance.zrik.tech)
+
 ![Python](https://img.shields.io/badge/Python-3.11+-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.110+-green)
 ![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
 ![YOLO](https://img.shields.io/badge/YOLOv11-Ultralytics-purple)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
+![Oracle](https://img.shields.io/badge/Oracle_Cloud-ARM_A1-F80000?logo=oracle&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 > Originally a single-file Streamlit prototype, rebuilt as a full-stack app: FastAPI backend running the detection pipeline, React dashboard streaming live annotated video over WebSockets, Postgres-backed persistence for cameras/zones/alerts.
 
+**Live at:** [surveillance.zrik.tech](https://surveillance.zrik.tech) (Oracle Cloud Always Free ARM A1, 4 OCPU/24GB, CPU-only inference) — log in with your own credentials (created on first boot via `ADMIN_USERNAME`/`ADMIN_PASSWORD`) or run it locally to explore.
+
 **Demo:** see [`assets/demo.mp4`](assets/demo.mp4)
+
+| Login | Dashboard |
+|---|---|
+| ![Login](docs/screenshots/1-login.png) | ![Dashboard](docs/screenshots/2-dashboard.png) |
+
+| Settings (live detection tuning) | Cameras |
+|---|---|
+| ![Settings](docs/screenshots/3-settings.png) | ![Cameras](docs/screenshots/4-cameras.png) |
 
 ---
 
@@ -93,6 +106,16 @@ bash scripts/stop-demo.sh
 ```
 
 *(Or skip the helper scripts and run `docker compose up -d` / `down` directly — the scripts just also handle Docker Desktop and the webcam bridge for you.)*
+
+---
+
+## Deployment (Oracle Cloud)
+
+- Runs on the same Oracle Cloud Always Free ARM A1 instance (4 OCPU/24GB) as [AutoAttendance](https://github.com/krishrakholiya32/AutoAttendance) — one shared box, each app in its own Docker Compose stack.
+- **ARM64 note:** `torch`/`torchvision` are normally pinned to PyTorch's dedicated CPU-only wheel index, but that index only publishes x86_64 builds. On arm64 the `Dockerfile` falls back to plain PyPI wheels instead, which are CPU-only there by default (no CUDA variant exists for this platform).
+- The compose stack's own nginx (handles `/api`, `/ws` WebSocket upgrade, `/snapshots`, and the SPA) binds to `127.0.0.1:8088` only — the shared VM's system-level nginx reverse-proxies `surveillance.zrik.tech` to that port and terminates SSL (Let's Encrypt via Certbot), the same pattern used for every other app on this box.
+- `BACKEND_CPU_LIMIT`/`BACKEND_MEM_LIMIT` are set conservatively (2 CPU / 4GB) to leave headroom for the other services sharing the VM.
+- Deploy workflow: `git pull && docker compose build && docker compose up -d` on the VM.
 
 ---
 
