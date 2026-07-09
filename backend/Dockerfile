@@ -8,9 +8,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 COPY backend/requirements.txt .
-# Install CPU-only torch first to keep the image small
-RUN pip install --no-cache-dir torch==2.5.1+cpu torchvision==0.20.1+cpu \
-    --index-url https://download.pytorch.org/whl/cpu \
+# The dedicated CPU-only wheel index only publishes x86_64 builds — on
+# arm64 (e.g. Oracle Cloud Ampere), fall back to plain PyPI, which ships
+# CPU-only wheels for that platform by default (no CUDA variant exists).
+RUN ARCH=$(dpkg --print-architecture) \
+ && if [ "$ARCH" = "amd64" ]; then \
+        pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1 \
+            --index-url https://download.pytorch.org/whl/cpu; \
+    else \
+        pip install --no-cache-dir torch==2.5.1 torchvision==0.20.1; \
+    fi \
  && pip install --no-cache-dir -r requirements.txt
 
 COPY backend/ .
