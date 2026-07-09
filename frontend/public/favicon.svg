@@ -15,6 +15,6 @@
   <path d="M19 27 H42 L45 37 H16 Z" fill="url(#camGrad)"/>
 
   <!-- lens ring at the front -->
-  <circle cx="46" cy="32" r="9" fill="#0a0e14" stroke="url(#camGrad)" stroke-width="3.2"/>
-  <circle cx="46" cy="32" r="4.6" fill="url(#camGrad)"/>
+  <circle cx="46" cy="32" r="13" fill="#0a0e14" stroke="url(#camGrad)" stroke-width="3.6"/>
+  <circle cx="46" cy="32" r="7" fill="url(#camGrad)"/>
 </svg>
