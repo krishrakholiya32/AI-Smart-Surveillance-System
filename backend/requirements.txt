@@ -24,6 +24,5 @@ onnx==1.17.0
 onnxslim==0.1.48
 
 # Utilities
-aiofiles==24.1.0
 Pillow==11.1.0
 python-dotenv==1.0.1
