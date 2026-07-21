@@ -30,7 +30,7 @@ services:
       ADMIN_USERNAME: ${ADMIN_USERNAME:?ADMIN_USERNAME must be set in .env}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set in .env}
       SECRET_KEY: ${SECRET_KEY:?SECRET_KEY must be set in .env}
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-'["http://localhost", "http://localhost:3000"]'}
+      ALLOWED_ORIGINS: "${ALLOWED_ORIGINS:-[\"http://localhost\", \"http://localhost:3000\"]}"
       # Match thread pools to the CPU quota below — without this, PyTorch/ONNX
       # Runtime detect the host's full core count and oversubscribe threads,
       # causing scheduling thrash that's slower than capping threads correctly.
@@ -40,7 +40,7 @@ services:
       # Detection tuning — sets the *startup* defaults only. The Settings
       # page can change these live afterward without a restart.
       CONF_PERSON: "${CONF_PERSON:-0.50}"
-      CONF_WEAPON: "${CONF_WEAPON:-0.45}"
+      CONF_WEAPON: "${CONF_WEAPON:-0.25}"
       RUN_THRESH_NORM: "${RUN_THRESH_NORM:-0.18}"
       LOITER_SECS: "${LOITER_SECS:-8}"
       CROWD_LIMIT: "${CROWD_LIMIT:-5}"
